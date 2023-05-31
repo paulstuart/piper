@@ -112,7 +112,7 @@ func TestInRing(t *testing.T) {
 	}
 
 	for _, test := range test {
-		got := inRing(test.p, test.ring)
+		got := InRing(test.p, test.ring)
 
 		if got != test.expected {
 			t.Errorf("expected %+v, got: %+v", test.expected, got)

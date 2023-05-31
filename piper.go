@@ -51,7 +51,7 @@ func inExtent(p []float64, ring [][]float64) bool {
 		((n <= lat) && (lat <= s)))
 }
 
-func inRing(p []float64, ring [][]float64) bool {
+func InRing(p []float64, ring [][]float64) bool {
 	first, last := ring[0], ring[len(ring)-1]
 	if first[0] == last[0] && first[1] == last[1] {
 		ring = ring[0 : len(ring)-1]
@@ -100,7 +100,7 @@ func Pip(p []float64, polygon [][][]float64) bool {
 		return false
 	}
 
-	if inRing(p, outer) {
+	if InRing(p, outer) {
 		inPolygon = true
 
 		// if there inner ring/holes we have to assume
@@ -111,7 +111,7 @@ func Pip(p []float64, polygon [][][]float64) bool {
 			inHole := false
 
 			for i := 0; i < len(holes); i++ {
-				if inRing(p, holes[i]) {
+				if InRing(p, holes[i]) {
 					inHole = true
 				}
 			}
