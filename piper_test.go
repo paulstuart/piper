@@ -33,7 +33,7 @@ func TestInExtent(t *testing.T) {
 	}
 
 	for _, test := range test {
-		got := inExtent(test.p, test.ring)
+		got := InExtent(test.p, test.ring)
 
 		if got != test.expected {
 			t.Errorf("expected %+v, got: %+v", test.expected, got)

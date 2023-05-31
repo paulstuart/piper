@@ -20,7 +20,9 @@ func between(p, min, max float64) bool {
 	return p > min && p < max
 }
 
-func inExtent(p []float64, ring [][]float64) bool {
+// InExtent creates a bounding box of the outer ring
+// and returns true if the point is in that box
+func InExtent(p []float64, ring [][]float64) bool {
 	w := ring[0][0]
 	s := ring[0][1]
 	e := ring[0][0]
@@ -89,40 +91,35 @@ func hasHoles(polygon [][][]float64) bool {
 	return len(polygon) > 1
 }
 
-// Pip checks if Point p is inside input polygon. Does account for holes.
-func Pip(p []float64, polygon [][][]float64) bool {
-	outer := polygon[0]
-	inPolygon := false
-
-	// speeds up operations on complex polygons, insignifically slows
-	// down on simple polygons
-	if !inExtent(p, outer) {
+// PipBox checks if the point falls in the bounding box of the polygon
+// before actually checking the polygon
+// This speeds up operations on complex polygons, insignifically slows
+// down on simple polygons
+func PipBox(p []float64, polygon [][][]float64) bool {
+	if !InExtent(p, polygon[0]) {
 		return false
 	}
+	return Pip(p, polygon)
+}
 
-	if InRing(p, outer) {
-		inPolygon = true
+// Pip checks if Point p is inside input polygon. Does account for holes.
+func Pip(p []float64, polygon [][][]float64) bool {
+	if InRing(p, polygon[0]) {
 
 		// if there inner ring/holes we have to assume
 		// that p can be in a hole, and therefor not in polygon
 		if hasHoles(polygon) {
 			holes := polygon[1:]
-			inPolygon = false
-			inHole := false
 
 			for i := 0; i < len(holes); i++ {
 				if InRing(p, holes[i]) {
-					inHole = true
+					return false
 				}
-			}
-
-			if !inHole {
-				inPolygon = true
 			}
 		}
 
-		return inPolygon
+		return true
 	}
 
-	return inPolygon
+	return false
 }
