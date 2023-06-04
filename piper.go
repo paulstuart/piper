@@ -1,6 +1,12 @@
 package piper
 
-func max(a, b float64) float64 {
+import (
+	"golang.org/x/exp/constraints"
+)
+
+type Float = constraints.Float
+
+func max[T Float](a, b T) T {
 	if a > b {
 		return a
 	}
@@ -8,7 +14,7 @@ func max(a, b float64) float64 {
 	return b
 }
 
-func min(a, b float64) float64 {
+func min[T Float](a, b T) T {
 	if a < b {
 		return a
 	}
@@ -16,13 +22,13 @@ func min(a, b float64) float64 {
 	return b
 }
 
-func between(p, min, max float64) bool {
+func between[T Float](p, min, max T) bool {
 	return p > min && p < max
 }
 
 // InExtent creates a bounding box of the outer ring
 // and returns true if the point is in that box
-func InExtent(p []float64, ring [][]float64) bool {
+func InExtent[T Float](p []T, ring [][]T) bool {
 	w := ring[0][0]
 	s := ring[0][1]
 	e := ring[0][0]
@@ -53,7 +59,7 @@ func InExtent(p []float64, ring [][]float64) bool {
 		((n <= lat) && (lat <= s)))
 }
 
-func InRing(p []float64, ring [][]float64) bool {
+func InRing[T Float](p []T, ring [][]T) bool {
 	first, last := ring[0], ring[len(ring)-1]
 	if first[0] == last[0] && first[1] == last[1] {
 		ring = ring[0 : len(ring)-1]
@@ -87,7 +93,7 @@ func InRing(p []float64, ring [][]float64) bool {
 	return counter%2 != 0
 }
 
-func hasHoles(polygon [][][]float64) bool {
+func hasHoles[T Float](polygon [][][]T) bool {
 	return len(polygon) > 1
 }
 
@@ -95,7 +101,7 @@ func hasHoles(polygon [][][]float64) bool {
 // before actually checking the polygon
 // This speeds up operations on complex polygons, insignifically slows
 // down on simple polygons
-func PipBox(p []float64, polygon [][][]float64) bool {
+func PipBox[T Float](p []T, polygon [][][]T) bool {
 	if !InExtent(p, polygon[0]) {
 		return false
 	}
@@ -103,7 +109,7 @@ func PipBox(p []float64, polygon [][][]float64) bool {
 }
 
 // Pip checks if Point p is inside input polygon. Does account for holes.
-func Pip(p []float64, polygon [][][]float64) bool {
+func Pip[T Float](p []T, polygon [][][]T) bool {
 	if InRing(p, polygon[0]) {
 
 		// if there inner ring/holes we have to assume
