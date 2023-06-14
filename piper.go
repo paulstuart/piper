@@ -1,6 +1,16 @@
 package piper
 
-func max(a, b float64) float64 {
+import (
+	"log"
+
+	"golang.org/x/exp/constraints"
+)
+
+var Debug bool
+
+type Float = constraints.Float
+
+func max[T Float](a, b T) T {
 	if a > b {
 		return a
 	}
@@ -8,7 +18,7 @@ func max(a, b float64) float64 {
 	return b
 }
 
-func min(a, b float64) float64 {
+func min[T Float](a, b T) T {
 	if a < b {
 		return a
 	}
@@ -16,11 +26,13 @@ func min(a, b float64) float64 {
 	return b
 }
 
-func between(p, min, max float64) bool {
+func between[T Float](p, min, max T) bool {
 	return p > min && p < max
 }
 
-func inExtent(p []float64, ring [][]float64) bool {
+// InExtent creates a bounding box of the outer ring
+// and returns true if the point is in that box
+func InExtent[T Float](p []T, ring [][]T) bool {
 	w := ring[0][0]
 	s := ring[0][1]
 	e := ring[0][0]
@@ -51,7 +63,7 @@ func inExtent(p []float64, ring [][]float64) bool {
 		((n <= lat) && (lat <= s)))
 }
 
-func inRing(p []float64, ring [][]float64) bool {
+func InRing[T Float](p []T, ring [][]T) bool {
 	first, last := ring[0], ring[len(ring)-1]
 	if first[0] == last[0] && first[1] == last[1] {
 		ring = ring[0 : len(ring)-1]
@@ -79,50 +91,59 @@ func inRing(p []float64, ring [][]float64) bool {
 		intersects := lon < ((jLon-iLon)*(lat-iLat))/(jLat-iLat)+iLon
 		if intersects {
 			counter++
+			if Debug {
+				log.Printf("polygon ray across [%d:%d]: %v -> %v", i, j, ring[i], ring[j])
+			}
 		}
 	}
 
+	if counter > 0 {
+		if Debug {
+			log.Printf("polygon ray crossed: %d segments", counter)
+		}
+	}
 	return counter%2 != 0
 }
 
-func hasHoles(polygon [][][]float64) bool {
+func hasHoles[T Float](polygon [][][]T) bool {
 	return len(polygon) > 1
 }
 
-// Pip checks if Point p is inside input polygon. Does account for holes.
-func Pip(p []float64, polygon [][][]float64) bool {
-	outer := polygon[0]
-	inPolygon := false
-
-	// speeds up operations on complex polygons, insignifically slows
-	// down on simple polygons
-	if !inExtent(p, outer) {
+// PipBox checks if the point falls in the bounding box of the polygon
+// before actually checking the polygon
+// This speeds up operations on complex polygons, insignifically slows
+// down on simple polygons
+func PipBox[T Float](p []T, polygon [][][]T) bool {
+	if !InExtent(p, polygon[0]) {
 		return false
 	}
+	return Pip(p, polygon)
+}
 
-	if inRing(p, outer) {
-		inPolygon = true
-
+// Pip checks if Point p is inside input polygon. Does account for holes.
+func Pip[T Float](p []T, polygon [][][]T) bool {
+	if Debug {
+		log.Printf("PIP PT:%v in ring:%v", p, polygon[0][0])
+	}
+	if InRing(p, polygon[0]) {
+		if Debug {
+			log.Printf("InRing: %v", p)
+		}
 		// if there inner ring/holes we have to assume
 		// that p can be in a hole, and therefor not in polygon
 		if hasHoles(polygon) {
 			holes := polygon[1:]
-			inPolygon = false
-			inHole := false
 
 			for i := 0; i < len(holes); i++ {
-				if inRing(p, holes[i]) {
-					inHole = true
+				if InRing(p, holes[i]) {
+					log.Printf("InHole [%d:%d]: %v", i, len(holes), p)
+					return false
 				}
-			}
-
-			if !inHole {
-				inPolygon = true
 			}
 		}
 
-		return inPolygon
+		return true
 	}
 
-	return inPolygon
+	return false
 }

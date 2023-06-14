@@ -2,10 +2,12 @@
 
 Yet another point in polygon package. Piper makes use of ray casting and does account for holes in polygons.
 
+Forked from github.com/iwpnd/piper
+
 ## Installation
 
 ```
-go get -u github.com/iwpnd/piper
+go get -u github.com/paulstuart/piper
 ```
 
 ## Usage
@@ -18,7 +20,7 @@ package main
 import (
   "fmt"
 
-  "github.com/iwpnd/piper"
+  "github.com/paulstuart/piper"
   )
 
 func main() {
@@ -40,7 +42,7 @@ import (
 	"fmt"
 	"io/ioutil"
 
-	"github.com/iwpnd/piper"
+	"github.com/paulstuart/piper"
 	"github.com/paulmach/go.geojson"
 )
 
